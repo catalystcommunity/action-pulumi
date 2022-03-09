@@ -1,22 +1,136 @@
-name: 'Hello World' # taken from https://docs.github.com/en/actions/creating-actions/creating-a-composite-action
-description: 'Greet someone'
+name: 'Run Pulumi Command'
+description: Runs pulumi command on specified stack. Currently supports pulumi in golang and AWS, may support other languages and providers in the future. If the runtime is go, then go modules are cached.
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  runtime:
+    description: Pulumi runtime
+    required: false
+    default: go
+  go-version:
+    description: Go version to use, this input is only used if the runtime is set to `go`
+    required: false
+    default: '~1.17'
+  provider:
+    description: Cloud provider to get credentials for
+    required: false
+    default: aws
+  aws-region:
+    description: AWS region
+    required: false
+    default: us-west-2
+  aws-access-key-id:
+    description: AWS access key id to use
+    required: false
+    default: ''
+  aws-secret-access-key:
+    description: AWS secret access key
+    required: false
+    default: ''
+  command:
+    description: 'Pulumi command to run, one of `up`, `refresh`, `destroy`, `preview`'
     required: true
-    default: 'World'
+  stack-name:
+    description: 'Which stack you want to apply to, eg. prod'
+    required: true
+  work-dir:
+    description: 'Location of your Pulumi files. Defaults to ./'
+    required: false
+    default: ./
+  comment-on-pr:
+    description: 'If true, a comment will be created with results'
+    required: false
+    default: 'false'
+  github-token:
+    description: 'Github Token'
+    required: false
+    default: ${{ github.token }}
+  cloud-url:
+    description: 'A cloud URL to log in to'
+    required: false
+    default: ''
+  secrets-provider:
+    description: 'The type of the provider that should be used to encrypt and decrypt secrets. Possible choices: default, passphrase, awskms, azurekeyvault, gcpkms, hashivault'
+    required: false
+    default: ''
+  parallel:
+    description: 'Allow P resource operations to run in parallel at once (1 for no parallelism). Defaults to unbounded.'
+    required: false
+    default: '2147483647'
+  message:
+    description: 'Optional message to associate with the update operation'
+    required: false
+    default: ''
+  expect-no-changes:
+    description: 'Return an error if any changes occur during this update'
+    required: false
+  diff:
+    description: 'Display operation as a rich diff showing the overall change'
+    required: false
+  replace:
+    description: 'Specify resources to replace. Multiple resources can be specified one per line'
+    required: false
+  target:
+    description: 'Specify a single resource URN to update. Other resources will not be updated. Multiple resources can be specified one per line'
+    required: false
+  target-dependents:
+    description: 'Allows updating of dependent targets discovered but not specified in target.'
+    required: false
+    default: 'false'
+  refresh:
+    description: 'Perform a stack refresh as part of the operation'
+    required: false
+    default: 'false'
+  upsert:
+    description: 'Create the stack if it currently does not exist'
+    required: false
+    default: 'false'
+  edit-pr-comment:
+    description: 'Edit previous PR comment instead of posting new one'
+    required: false
+    default: 'true'
 outputs:
-  random-number:
-    description: "Random number"
-    value: ${{ steps.random-number-generator.outputs.random-id }}
+  command-output:
+    description: "Output of pulumi command"
+    value: ${{ steps.command.outputs.output }}
 runs:
   using: "composite"
   steps:
-    - run: echo Hello ${{ inputs.who-to-greet }}.
+    - name: Checkout
+      uses: actions/checkout@v2
+    - if: inputs.provider == 'aws'
+      name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ${{ inputs.aws-region }}
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+    - if: inputs.runtime == 'go'
+      name: Setup Go With Caching
+      uses: magnetikonline/action-golang-cache@v1
+      with:
+        go-version: ${{ inputs.go-version }}
+    - if: inputs.runtime == 'go'
+      name: Download go dependencies
       shell: bash
-    - id: random-number-generator
-      run: echo "::set-output name=random-id::$(echo $RANDOM)"
-      shell: bash
-    - run: ${{ github.action_path }}/goodbye.sh
-      shell: bash
-
+      run: | 
+        go mod download
+    - name: Run Pulumi command
+      id: command
+      uses: pulumi/actions@v3
+      with:
+        command: ${{ inputs.command }}
+        stack-name: ${{ inputs.stack-name }}
+        work-dir: ${{ inputs.work-dir }}
+        comment-on-pr: ${{ inputs.comment-on-pr }}
+        github-token: ${{ inputs.github-token }}
+        cloud-url: ${{ inputs.pulumi-backend-url }}
+        secrets-provider: ${{ inputs.secrets-provider }}
+        parallel: ${{ inputs.parallel }}
+        message: ${{ inputs.message }}
+        expect-no-changes: ${{ inputs.expect-no-changes }}
+        diff: ${{ inputs.diff }}
+        replace: ${{ inputs.replace }}
+        target: ${{ inputs.target }}
+        target-dependents: ${{ inputs.target-dependents }}
+        refresh: ${{ inputs.refresh }}
+        upsert: ${{ inputs.upsert }}
+        edit-pr-comment: ${{ inputs.edit-pr-comment }}

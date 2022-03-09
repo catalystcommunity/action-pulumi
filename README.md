@@ -40,20 +40,30 @@ Greet someone
 ### Example usage
 
 ```yaml
-on: [push]
-
+name: Deploy via Pulumi
+on: # only trigger on prs to main closed
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
 jobs:
-  hello_world_job:
+  deploy:
+    if: github.event.pull_request.merged == true # only deploy on merged PRs
+    strategy:
+      matrix:
+        stack-name: [ common, nonprod, prod ]
+    name: Deploy ${{ matrix.stack-name }}
     runs-on: ubuntu-latest
-    name: A job to say hello
     steps:
-      - uses: actions/checkout@v2
-      - id: foo
-        uses: actions/hello-world-composite-action@v1
+      - name: Deploy
+        uses: catalystsquad/action-pulumi@v1
         with:
-          who-to-greet: "Mona the Octocat"
-      - run: echo random-number ${{ steps.foo.outputs.random-number }}
-        shell: bash
+          command: up
+          stack-name: ${{ matrix.stack-name }}
+          aws-access-key-id: ${{ secrets.PULUMI_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PULUMI_AWS_SECRET_ACCESS_KEY }}
+          cloud-url: ${{ secrets.PULUMI_BACKEND_URL_PLATFORM }}
 ```
 
 <!-- end examples -->
