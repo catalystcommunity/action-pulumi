@@ -65,6 +65,7 @@ inputs:
   diff:
     description: 'Display operation as a rich diff showing the overall change'
     required: false
+    default: true
   replace:
     description: 'Specify resources to replace. Multiple resources can be specified one per line'
     required: false
@@ -78,7 +79,7 @@ inputs:
   refresh:
     description: 'Perform a stack refresh as part of the operation'
     required: false
-    default: 'false'
+    default: 'true'
   upsert:
     description: 'Create the stack if it currently does not exist'
     required: false
@@ -122,7 +123,7 @@ runs:
         work-dir: ${{ inputs.work-dir }}
         comment-on-pr: ${{ inputs.comment-on-pr }}
         github-token: ${{ inputs.github-token }}
-        cloud-url: ${{ inputs.pulumi-backend-url }}
+        cloud-url: ${{ inputs.cloud-url }}
         secrets-provider: ${{ inputs.secrets-provider }}
         parallel: ${{ inputs.parallel }}
         message: ${{ inputs.message }}
