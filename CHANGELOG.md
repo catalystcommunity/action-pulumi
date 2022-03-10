@@ -1,3 +1,10 @@
+# 1.0.0 (2022-03-10)
+
+
+### Bug Fixes
+
+* Initial commit ([#1](https://github.com/catalystsquad/action-pulumi/issues/1)) ([d3273ca](https://github.com/catalystsquad/action-pulumi/commit/d3273ca08c039c94aa4330cac605511a63906adc))
+
 # 1.0.0 (2022-02-28)
 
 
