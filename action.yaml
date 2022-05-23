@@ -113,6 +113,7 @@ runs:
       name: Download go dependencies
       shell: bash
       run: | 
+        cd ${{ inputs.work-dir }}
         go mod download
     - name: Run Pulumi command
       id: command
