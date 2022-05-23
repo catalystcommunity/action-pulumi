@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/catalystsquad/action-pulumi/compare/v1.0.0...v1.0.1) (2022-05-23)
+
+
+### Bug Fixes
+
+* add support for work-dir in go mod download step, disable repo template setting ([#2](https://github.com/catalystsquad/action-pulumi/issues/2)) ([6513ed6](https://github.com/catalystsquad/action-pulumi/commit/6513ed6884be0a204d374cd1efdc3f0fda9af9b3))
+
 # 1.0.0 (2022-03-10)
 
 
