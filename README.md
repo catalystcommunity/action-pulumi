@@ -13,7 +13,7 @@ Runs pulumi command on specified stack. Currently supports pulumi in golang and 
 <!-- start usage -->
 
 ```yaml
-- uses: catalystsquad/action-pulumi@undefined
+- uses: catalystcommunity/action-pulumi@undefined
   with:
     # Pulumi runtime
     # Default: go
@@ -165,7 +165,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        uses: catalystsquad/action-pulumi@v1
+        uses: catalystcommunity/action-pulumi@v1
         with:
           command: up
           stack-name: ${{ matrix.stack-name }}
